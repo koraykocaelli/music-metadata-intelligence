@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
-from app.schemas.track import TrackCreate, TrackRead
+from app.schemas.track import MatchCandidate, TrackCreate, TrackRead
 from app.services import track as track_service
 
 
@@ -22,6 +22,16 @@ def create_track(
     db: Session = Depends(get_db),
 ) -> TrackRead:
     return track_service.create_track(db, track_data)
+
+@router.post(
+    "/similar",
+    response_model=list[MatchCandidate],
+)
+def find_similar_tracks(
+    track_data: TrackCreate,
+    db: Session = Depends(get_db),
+) -> list[MatchCandidate]:
+    return track_service.find_similar_tracks(db, track_data)
 
 
 @router.get(

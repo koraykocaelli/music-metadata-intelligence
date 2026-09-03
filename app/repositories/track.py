@@ -52,3 +52,8 @@ def get_track_by_normalized_metadata(
     )
 
     return db.scalar(statement)
+
+def get_all_tracks(db: Session) -> list[Track]:
+    statement = select(Track).order_by(Track.id)
+
+    return list(db.scalars(statement).all())

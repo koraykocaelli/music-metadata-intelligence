@@ -21,3 +21,10 @@ class TrackRead(BaseModel):
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+class MatchCandidate(BaseModel):
+    track_id: int
+    artist: str
+    title: str
+    score: float
+    classification: str

@@ -5,6 +5,8 @@ from app.models.track import Track
 from app.repositories import track as track_repository
 from app.schemas.track import TrackCreate
 from app.services.normalization import normalize_text, normalize_track_title
+from app.services.matching import calculate_similarity, classify_similarity
+
 
 
 def create_track(db: Session, track_data: TrackCreate) -> Track:
@@ -49,3 +51,43 @@ def get_tracks(db: Session) -> list[Track]:
 
 def get_track_by_id(db: Session, track_id: int) -> Track | None:
     return track_repository.get_track_by_id(db, track_id)
+
+def find_similar_tracks(
+    db: Session,
+    track_data: TrackCreate,
+    threshold: float = 80.0,
+) -> list[dict[str, object]]:
+    normalized_artist = normalize_text(track_data.artist)
+    normalized_title = normalize_track_title(track_data.title)
+
+    candidates = track_repository.get_all_tracks(db)
+
+    matches: list[dict[str, object]] = []
+
+    for candidate in candidates:
+        if candidate.normalized_artist is None or candidate.normalized_title is None:
+            continue
+
+        score = calculate_similarity(
+            normalized_artist,
+            normalized_title,
+            candidate.normalized_artist,
+            candidate.normalized_title,
+        )
+
+        if score >= threshold:
+            matches.append(
+                {
+                    "track_id": candidate.id,
+                    "artist": candidate.artist,
+                    "title": candidate.title,
+                    "score": score,
+                    "classification": classify_similarity(score),
+                }
+            )
+
+    return sorted(
+        matches,
+        key=lambda item: item["score"],
+        reverse=True,
+    )
