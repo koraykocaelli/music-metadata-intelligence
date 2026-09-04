@@ -36,4 +36,4 @@ A backend-first music metadata processing and matching platform built with Pytho
 
 In active development.
 
-Next steps include fuzzy metadata matching, similarity scoring, and semantic search capabilities.
+The current matching pipeline includes metadata normalization, duplicate detection, candidate retrieval, fuzzy similarity scoring, and confidence classification.
