@@ -60,7 +60,11 @@ def find_similar_tracks(
     normalized_artist = normalize_text(track_data.artist)
     normalized_title = normalize_track_title(track_data.title)
 
-    candidates = track_repository.get_all_tracks(db)
+    candidates = track_repository.get_match_candidates(
+        db,
+        normalized_artist,
+        normalized_title,
+    )
 
     matches: list[dict[str, object]] = []
 

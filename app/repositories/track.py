@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session
 from app.models.track import Track
 from app.schemas.track import TrackCreate
 
+from sqlalchemy import or_, select
+
 
 def create_track(
     db: Session,
@@ -57,3 +59,32 @@ def get_all_tracks(db: Session) -> list[Track]:
     statement = select(Track).order_by(Track.id)
 
     return list(db.scalars(statement).all())
+
+def get_match_candidates(
+    db: Session,
+    normalized_artist: str,
+    normalized_title: str,
+    limit: int = 100,
+) -> list[Track]:
+    artist_tokens = normalized_artist.split()
+    title_tokens = normalized_title.split()
+
+    artist_hint = artist_tokens[-1] if artist_tokens else normalized_artist
+    title_hint = title_tokens[0] if title_tokens else normalized_title
+
+    statement = (
+        select(Track)
+        .where(
+            or_(
+                Track.normalized_artist == normalized_artist,
+                Track.normalized_title == normalized_title,
+                Track.normalized_artist.contains(artist_hint),
+                Track.normalized_title.contains(title_hint),
+            )
+        )
+        .order_by(Track.id)
+        .limit(limit)
+    )
+
+    return list(db.scalars(statement).all())
+

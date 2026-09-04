@@ -2,6 +2,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from enum import Enum
+
 
 class TrackCreate(BaseModel):
     artist: str = Field(min_length=1, max_length=255)
@@ -28,3 +30,16 @@ class MatchCandidate(BaseModel):
     title: str
     score: float
     classification: str
+
+class MatchClassification(str, Enum):
+    HIGH_CONFIDENCE = "high_confidence"
+    REVIEW = "review"
+    NO_MATCH = "no_match"
+
+class MatchCandidate(BaseModel):
+    track_id: int
+    artist: str
+    title: str
+    score: float
+    classification: MatchClassification
+

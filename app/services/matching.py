@@ -1,5 +1,7 @@
 from rapidfuzz import fuzz
 
+from app.schemas.track import MatchClassification
+
 
 def calculate_similarity(
     artist_a: str,
@@ -14,11 +16,13 @@ def calculate_similarity(
 
     return round(final_score, 2)
 
-def classify_similarity(score: float) -> str:
+
+def classify_similarity(score: float) -> MatchClassification:
     if score >= 95.0:
-        return "high_confidence"
+        return MatchClassification.HIGH_CONFIDENCE
 
     if score >= 80.0:
-        return "review"
+        return MatchClassification.REVIEW
 
-    return "no_match"
+    return MatchClassification.NO_MATCH
+
