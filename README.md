@@ -14,6 +14,7 @@ The project focuses on cleaning, normalizing, comparing, and matching inconsiste
 - Match confidence classification
 - Database-level candidate retrieval before fuzzy comparison
 - Metadata backfill for existing records
+- - Integration testing against a dedicated PostgreSQL test database
 
 ## Matching Pipeline
 
