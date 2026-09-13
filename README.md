@@ -12,7 +12,7 @@ The project focuses on cleaning, normalizing, comparing, and matching inconsiste
 - Fuzzy metadata matching with RapidFuzz
 - Weighted similarity scoring
 - Match confidence classification
-- Database-level candidate retrieval before fuzzy comparison
+- PostgreSQL trigram-based candidate retrieval for typo-tolerant matching
 - Metadata backfill for existing records
 - Integration testing against a dedicated PostgreSQL test database
 
