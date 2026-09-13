@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.models.track import Track
 from app.schemas.track import TrackCreate
 
-from sqlalchemy import or_, select
+from sqlalchemy import desc, func, or_, select
 
 
 def create_track(
@@ -65,23 +65,32 @@ def get_match_candidates(
     normalized_title: str,
     limit: int = 100,
 ) -> list[Track]:
-    artist_tokens = normalized_artist.split()
-    title_tokens = normalized_title.split()
+    artist_similarity = func.similarity(
+        Track.normalized_artist,
+        normalized_artist,
+    )
 
-    artist_hint = artist_tokens[-1] if artist_tokens else normalized_artist
-    title_hint = title_tokens[0] if title_tokens else normalized_title
+    title_similarity = func.similarity(
+        Track.normalized_title,
+        normalized_title,
+    )
 
     statement = (
         select(Track)
         .where(
             or_(
-                Track.normalized_artist == normalized_artist,
-                Track.normalized_title == normalized_title,
-                Track.normalized_artist.contains(artist_hint),
-                Track.normalized_title.contains(title_hint),
+                artist_similarity >= 0.3,
+                title_similarity >= 0.3,
             )
         )
-        .order_by(Track.id)
+        .order_by(
+            desc(
+                func.greatest(
+                    artist_similarity,
+                    title_similarity,
+                )
+            )
+        )
         .limit(limit)
     )
 
