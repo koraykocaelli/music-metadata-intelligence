@@ -12,9 +12,11 @@ The project focuses on cleaning, normalizing, comparing, and matching inconsiste
 - Fuzzy metadata matching with RapidFuzz
 - Weighted similarity scoring
 - Match confidence classification
+- Track version detection for remix, live, acoustic, and other version variants
 - PostgreSQL trigram-based candidate retrieval for typo-tolerant matching
 - Metadata backfill for existing records
 - Integration testing against a dedicated PostgreSQL test database
+- Evaluation pipeline with accuracy, precision, recall, and F1 metrics
 
 ## Matching Pipeline
 
@@ -73,6 +75,12 @@ Swagger UI will be available at `http://127.0.0.1:8000/docs`.
 
 ```bash
 pytest
+```
+
+### Run Matching Evaluation
+
+```bash
+python -m scripts.evaluate_matching
 ```
 
 ## Project Status

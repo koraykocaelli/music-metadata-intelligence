@@ -1,0 +1,214 @@
+[
+  {
+    "artist_a": "The Weeknd",
+    "title_a": "Blinding Lights",
+    "artist_b": "The Weeknd",
+    "title_b": "Blinding Lights",
+    "expected_match": true
+  },
+  {
+    "artist_a": "The Weekend",
+    "title_a": "Blinding Light",
+    "artist_b": "The Weeknd",
+    "title_b": "Blinding Lights",
+    "expected_match": true
+  },
+  {
+    "artist_a": "The Weknd",
+    "title_a": "Blinding Ligths",
+    "artist_b": "The Weeknd",
+    "title_b": "Blinding Lights",
+    "expected_match": true
+  },
+  {
+    "artist_a": "The Weeknd",
+    "title_a": "Blinding Lights (Official Audio)",
+    "artist_b": "The Weeknd",
+    "title_b": "Blinding Lights",
+    "expected_match": true
+  },
+  {
+    "artist_a": "Daft Punk",
+    "title_a": "Get Lucky",
+    "artist_b": "Daft Punk",
+    "title_b": "Get Lucky (Official Audio)",
+    "expected_match": true
+  },
+  {
+    "artist_a": "Adele",
+    "title_a": "Hello",
+    "artist_b": "Adele",
+    "title_b": "Someone Like You",
+    "expected_match": false
+  },
+  {
+    "artist_a": "Coldplay",
+    "title_a": "Yellow",
+    "artist_b": "Radiohead",
+    "title_b": "Creep",
+    "expected_match": false
+  },
+  {
+    "artist_a": "The Weeknd",
+    "title_a": "Starboy",
+    "artist_b": "The Weeknd",
+    "title_b": "Blinding Lights",
+    "expected_match": false
+  },
+  {
+    "artist_a": "Imagine Dragons",
+    "title_a": "Believer",
+    "artist_b": "Imagine Dragons",
+    "title_b": "Thunder",
+    "expected_match": false
+  },
+  {
+    "artist_a": "Dua Lipa",
+    "title_a": "Levitating",
+    "artist_b": "Adele",
+    "title_b": "Hello",
+    "expected_match": false
+  },
+
+  {
+    "artist_a": "Guns N' Roses",
+    "title_a": "Sweet Child O' Mine",
+    "artist_b": "Guns N Roses",
+    "title_b": "Sweet Child O Mine",
+    "expected_match": true
+  },
+  {
+    "artist_a": "Arctic Monkeys",
+    "title_a": "Do I Wanna Know?",
+    "artist_b": "Arctic Monkeys",
+    "title_b": "Do I Wanna Know",
+    "expected_match": true
+  },
+  {
+    "artist_a": "Billie Eilish",
+    "title_a": "bad guy",
+    "artist_b": "BILLIE EILISH",
+    "title_b": "Bad Guy",
+    "expected_match": true
+  },
+  {
+    "artist_a": "Nirvana",
+    "title_a": "Smells Like Teen Spirit",
+    "artist_b": "Nirvana",
+    "title_b": "Smells Like Teen Spirit (Official Music Video)",
+    "expected_match": true
+  },
+  {
+    "artist_a": "Linkin Park",
+    "title_a": "In The End",
+    "artist_b": "LINKIN PARK",
+    "title_b": "In the End",
+    "expected_match": true
+  },
+  {
+    "artist_a": "Red Hot Chili Peppers",
+    "title_a": "Californication",
+    "artist_b": "Red Hot Chilli Peppers",
+    "title_b": "Californication",
+    "expected_match": true
+  },
+  {
+    "artist_a": "Imagine Dragons",
+    "title_a": "Radioactive",
+    "artist_b": "Imagine Dragon",
+    "title_b": "Radioactive",
+    "expected_match": true
+  },
+  {
+    "artist_a": "Coldplay",
+    "title_a": "Viva La Vida",
+    "artist_b": "Cold Play",
+    "title_b": "Viva la Vida",
+    "expected_match": true
+  },
+  {
+    "artist_a": "Twenty One Pilots",
+    "title_a": "Stressed Out",
+    "artist_b": "twentyonepilots",
+    "title_b": "Stressed Out",
+    "expected_match": true
+  },
+  {
+    "artist_a": "Daft Punk",
+    "title_a": "Around the World",
+    "artist_b": "Daft Punk",
+    "title_b": "Around The World (Official Audio)",
+    "expected_match": true
+  },
+
+  {
+    "artist_a": "Adele",
+    "title_a": "Hello",
+    "artist_b": "Lionel Richie",
+    "title_b": "Hello",
+    "expected_match": false
+  },
+  {
+    "artist_a": "Radiohead",
+    "title_a": "Creep",
+    "artist_b": "Stone Temple Pilots",
+    "title_b": "Creep",
+    "expected_match": false
+  },
+  {
+    "artist_a": "Coldplay",
+    "title_a": "Paradise",
+    "artist_b": "Coldplay",
+    "title_b": "Yellow",
+    "expected_match": false
+  },
+  {
+    "artist_a": "Linkin Park",
+    "title_a": "Numb",
+    "artist_b": "Linkin Park",
+    "title_b": "In the End",
+    "expected_match": false
+  },
+  {
+    "artist_a": "Daft Punk",
+    "title_a": "Get Lucky",
+    "artist_b": "Daft Punk",
+    "title_b": "One More Time",
+    "expected_match": false
+  },
+  {
+    "artist_a": "Imagine Dragons",
+    "title_a": "Believer",
+    "artist_b": "Imagine Dragons",
+    "title_b": "Believer Remix",
+    "expected_match": false
+  },
+  {
+    "artist_a": "The Weeknd",
+    "title_a": "Save Your Tears",
+    "artist_b": "The Weeknd",
+    "title_b": "Save Your Tears Remix",
+    "expected_match": false
+  },
+  {
+    "artist_a": "Adele",
+    "title_a": "Hello",
+    "artist_b": "Adele",
+    "title_b": "Hello Live",
+    "expected_match": false
+  },
+  {
+    "artist_a": "Nirvana",
+    "title_a": "Come As You Are",
+    "artist_b": "Nirvana",
+    "title_b": "Come As You Are Live",
+    "expected_match": false
+  },
+  {
+    "artist_a": "Coldplay",
+    "title_a": "Yellow",
+    "artist_b": "Coldplay",
+    "title_b": "Yellow Acoustic",
+    "expected_match": false
+  }
+]
