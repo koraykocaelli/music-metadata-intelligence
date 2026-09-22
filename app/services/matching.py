@@ -16,6 +16,17 @@ def calculate_similarity(
 
     return round(final_score, 2)
 
+def calculate_similarity_components(
+    artist_a: str,
+    title_a: str,
+    artist_b: str,
+    title_b: str,
+) -> tuple[float, float]:
+    artist_score = fuzz.ratio(artist_a, artist_b)
+    title_score = fuzz.ratio(title_a, title_b)
+
+    return round(artist_score, 2), round(title_score, 2)
+
 
 def classify_similarity(score: float) -> MatchClassification:
     if score >= 95.0:

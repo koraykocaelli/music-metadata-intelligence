@@ -17,6 +17,8 @@ The project focuses on cleaning, normalizing, comparing, and matching inconsiste
 - Metadata backfill for existing records
 - Integration testing against a dedicated PostgreSQL test database
 - Evaluation pipeline with accuracy, precision, recall, and F1 metrics
+- False-positive and false-negative error analysis
+- Threshold analysis for similarity calibration
 
 ## Matching Pipeline
 
@@ -81,6 +83,12 @@ pytest
 
 ```bash
 python -m scripts.evaluate_matching
+```
+
+### Analyze Matching Thresholds
+
+```bash
+python -m scripts.analyze_thresholds
 ```
 
 ## Project Status

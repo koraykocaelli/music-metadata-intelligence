@@ -210,5 +210,221 @@
     "artist_b": "Coldplay",
     "title_b": "Yellow Acoustic",
     "expected_match": false
-  }
+  },
+
+  {
+  "artist_a": "Adele",
+  "title_a": "Rolling in the Deep",
+  "artist_b": "ADELE",
+  "title_b": "Rolling In The Deep",
+  "expected_match": true
+},
+{
+  "artist_a": "Queen",
+  "title_a": "Bohemian Rhapsody",
+  "artist_b": "Queen",
+  "title_b": "Bohemian Rhapsody (Official Video)",
+  "expected_match": true
+},
+{
+  "artist_a": "Linkin Park",
+  "title_a": "Numb",
+  "artist_b": "Linkin Prk",
+  "title_b": "Numb",
+  "expected_match": true
+},
+{
+  "artist_a": "Arctic Monkeys",
+  "title_a": "Do I Wanna Know",
+  "artist_b": "Arctic Monkey",
+  "title_b": "Do I Wanna Know?",
+  "expected_match": true
+},
+{
+  "artist_a": "Coldplay",
+  "title_a": "The Scientist",
+  "artist_b": "Cold Play",
+  "title_b": "The Scientist",
+  "expected_match": true
+},
+{
+  "artist_a": "Radiohead",
+  "title_a": "Karma Police",
+  "artist_b": "Radio Head",
+  "title_b": "Karma Police",
+  "expected_match": true
+},
+{
+  "artist_a": "Daft Punk",
+  "title_a": "One More Time",
+  "artist_b": "DaftPunk",
+  "title_b": "One More Time",
+  "expected_match": true
+},
+{
+  "artist_a": "Imagine Dragons",
+  "title_a": "Demons",
+  "artist_b": "Imagine Dragon",
+  "title_b": "Demons",
+  "expected_match": true
+},
+{
+  "artist_a": "Billie Eilish",
+  "title_a": "Ocean Eyes",
+  "artist_b": "Billie Eillish",
+  "title_b": "Ocean Eyes",
+  "expected_match": true
+},
+{
+  "artist_a": "Nirvana",
+  "title_a": "Lithium",
+  "artist_b": "NIRVANA",
+  "title_b": "Lithium [Lyrics]",
+  "expected_match": true
+},
+
+{
+  "artist_a": "Daft Punk",
+  "title_a": "Get Lucky",
+  "artist_b": "Daft Punk",
+  "title_b": "Get Lucky Remix",
+  "expected_match": false
+},
+{
+  "artist_a": "Coldplay",
+  "title_a": "Fix You",
+  "artist_b": "Coldplay",
+  "title_b": "Fix You Live",
+  "expected_match": false
+},
+{
+  "artist_a": "Adele",
+  "title_a": "Easy On Me",
+  "artist_b": "Adele",
+  "title_b": "Easy On Me Acoustic",
+  "expected_match": false
+},
+{
+  "artist_a": "Linkin Park",
+  "title_a": "Numb",
+  "artist_b": "Linkin Park",
+  "title_b": "Numb Instrumental",
+  "expected_match": false
+},
+{
+  "artist_a": "The Weeknd",
+  "title_a": "Starboy",
+  "artist_b": "The Weeknd",
+  "title_b": "Starboy Radio Edit",
+  "expected_match": false
+},
+{
+  "artist_a": "Dua Lipa",
+  "title_a": "Levitating",
+  "artist_b": "Dua Lipa",
+  "title_b": "Levitating Extended Mix",
+  "expected_match": false
+},
+{
+  "artist_a": "Nirvana",
+  "title_a": "Lithium",
+  "artist_b": "Nirvana",
+  "title_b": "Lithium Live",
+  "expected_match": false
+},
+{
+  "artist_a": "Queen",
+  "title_a": "Radio Ga Ga",
+  "artist_b": "Queen",
+  "title_b": "Radio Ga Ga Acoustic",
+  "expected_match": false
+},
+{
+  "artist_a": "Radiohead",
+  "title_a": "Creep",
+  "artist_b": "Radiohead",
+  "title_b": "Creep Instrumental",
+  "expected_match": false
+},
+{
+  "artist_a": "Imagine Dragons",
+  "title_a": "Radioactive",
+  "artist_b": "Imagine Dragons",
+  "title_b": "Radioactive Remix",
+  "expected_match": false
+},
+
+{
+  "artist_a": "Adele",
+  "title_a": "Hello",
+  "artist_b": "Lionel Richie",
+  "title_b": "Hello Live",
+  "expected_match": false
+},
+{
+  "artist_a": "Queen",
+  "title_a": "Somebody to Love",
+  "artist_b": "Jefferson Airplane",
+  "title_b": "Somebody to Love",
+  "expected_match": false
+},
+{
+  "artist_a": "Radiohead",
+  "title_a": "High and Dry",
+  "artist_b": "Radiohead",
+  "title_b": "High",
+  "expected_match": false
+},
+{
+  "artist_a": "Coldplay",
+  "title_a": "Clocks",
+  "artist_b": "Coldplay",
+  "title_b": "Clock",
+  "expected_match": false
+},
+{
+  "artist_a": "Adele",
+  "title_a": "Someone Like You",
+  "artist_b": "Adele",
+  "title_b": "Someone Like Me",
+  "expected_match": false
+},
+{
+  "artist_a": "The Weeknd",
+  "title_a": "Die For You",
+  "artist_b": "The Weeknd",
+  "title_b": "I Feel It Coming",
+  "expected_match": false
+},
+
+{
+  "artist_a": "Daft Punk",
+  "title_a": "Get Lucky",
+  "artist_b": "Daft Punk",
+  "title_b": "Get Lucky Remastered",
+  "expected_match": false
+},
+{
+  "artist_a": "Nirvana",
+  "title_a": "Come As You Are",
+  "artist_b": "Nirvana",
+  "title_b": "Come As You Are Remastered",
+  "expected_match": false
+},
+{
+  "artist_a": "The Weeknd",
+  "title_a": "Blinding Lights",
+  "artist_b": "The Weeknd",
+  "title_b": "Blinding Lights Sped Up",
+  "expected_match": false
+},
+{
+  "artist_a": "Billie Eilish",
+  "title_a": "Ocean Eyes",
+  "artist_b": "Billie Eilish",
+  "title_b": "Ocean Eyes Slowed",
+  "expected_match": false
+}
+
+
 ]

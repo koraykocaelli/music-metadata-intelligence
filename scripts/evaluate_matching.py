@@ -1,7 +1,10 @@
 import json
 from pathlib import Path
 
-from app.services.matching import calculate_similarity
+from app.services.matching import (
+    calculate_similarity,
+    calculate_similarity_components,
+)
 from app.services.normalization import (
     detect_track_versions,
     normalize_text,
@@ -51,6 +54,7 @@ def evaluate() -> None:
     false_positive = 0
     true_negative = 0
     false_negative = 0
+
     false_positive_cases = []
     false_negative_cases = []
 
@@ -63,7 +67,28 @@ def evaluate() -> None:
 
         elif not expected and predicted:
             false_positive += 1
-            false_positive_cases.append((pair, score))
+
+            artist_a = normalize_text(pair["artist_a"])
+            artist_b = normalize_text(pair["artist_b"])
+
+            title_a = normalize_track_title(pair["title_a"])
+            title_b = normalize_track_title(pair["title_b"])
+
+            artist_score, title_score = calculate_similarity_components(
+                artist_a,
+                title_a,
+                artist_b,
+                title_b,
+            )
+
+            false_positive_cases.append(
+                {
+                    "pair": pair,
+                    "artist_score": artist_score,
+                    "title_score": title_score,
+                    "final_score": score,
+                }
+            )
 
         elif not expected and not predicted:
             true_negative += 1
@@ -104,20 +129,29 @@ def evaluate() -> None:
     print(f"Precision: {precision:.2%}")
     print(f"Recall: {recall:.2%}")
     print(f"F1 score: {f1_score:.2%}")
+
     print()
     print(f"True positives: {true_positive}")
     print(f"False positives: {false_positive}")
     print(f"True negatives: {true_negative}")
     print(f"False negatives: {false_negative}")
+
     if false_positive_cases:
         print()
-        print("False positive cases:")
+        print("False positive analysis:")
 
-        for pair, score in false_positive_cases:
+        for case in false_positive_cases:
+            pair = case["pair"]
+
             print(
                 f'- "{pair["artist_a"]} - {pair["title_a"]}" '
-                f'vs "{pair["artist_b"]} - {pair["title_b"]}" '
-                f"(score: {score:.2f})"
+                f'vs "{pair["artist_b"]} - {pair["title_b"]}"'
+            )
+
+            print(
+                f'  artist={case["artist_score"]:.2f}, '
+                f'title={case["title_score"]:.2f}, '
+                f'final={case["final_score"]:.2f}'
             )
 
     if false_negative_cases:

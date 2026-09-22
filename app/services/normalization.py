@@ -17,6 +17,9 @@ VERSION_PATTERNS = {
     "instrumental": r"\binstrumental\b",
     "radio_edit": r"\bradio edit\b",
     "extended_mix": r"\bextended mix\b",
+    "remastered": r"\bremaster(?:ed)?\b",
+    "sped_up": r"\bsped up\b",
+    "slowed": r"\bslowed\b",
 }
 
 
