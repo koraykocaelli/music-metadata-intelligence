@@ -26,11 +26,13 @@ Incoming metadata is processed through a structured matching pipeline:
 
 1. Normalize artist and track title metadata
 2. Retrieve potential candidates from PostgreSQL
-3. Compare candidates using fuzzy string matching
-4. Calculate a weighted similarity score
-5. Classify matches by confidence level
+3. Compare artist and title metadata using fuzzy string matching
+4. Calculate artist, title, and weighted similarity scores
+5. Validate track-version compatibility
+6. Apply calibrated matching thresholds
+7. Classify matches by confidence level
 
-This reduces unnecessary comparisons while handling spelling differences, formatting inconsistencies, and common title variations.
+This reduces unnecessary comparisons while handling spelling differences, formatting inconsistencies, title variations, and distinct track versions such as remixes, live recordings, and acoustic versions.
 
 ## API Endpoints
 

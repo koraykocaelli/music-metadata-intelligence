@@ -4,9 +4,10 @@ from pathlib import Path
 from app.services.matching import (
     calculate_similarity,
     calculate_similarity_components,
+    is_metadata_match,
 )
+
 from app.services.normalization import (
-    detect_track_versions,
     normalize_text,
     normalize_track_title,
 )
@@ -31,9 +32,6 @@ def predict_match(pair: dict) -> tuple[bool, float]:
     title_a = normalize_track_title(pair["title_a"])
     title_b = normalize_track_title(pair["title_b"])
 
-    versions_a = detect_track_versions(pair["title_a"])
-    versions_b = detect_track_versions(pair["title_b"])
-
     score = calculate_similarity(
         artist_a,
         title_a,
@@ -41,10 +39,16 @@ def predict_match(pair: dict) -> tuple[bool, float]:
         title_b,
     )
 
-    if versions_a != versions_b:
-        return False, score
+    predicted = is_metadata_match(
+        artist_a,
+        title_a,
+        artist_b,
+        title_b,
+        raw_title_a=pair["title_a"],
+        raw_title_b=pair["title_b"],
+    )
 
-    return score >= 80.0, score
+    return predicted, score
 
 
 def evaluate() -> None:
