@@ -12,6 +12,8 @@ The project focuses on cleaning, normalizing, comparing, and matching inconsiste
 - Fuzzy metadata matching with RapidFuzz
 - Weighted similarity scoring
 - Match confidence classification
+- ISRC-aware matching with metadata fallback
+- Match method tracking for ISRC and metadata-based matches
 - Track version detection for remix, live, acoustic, and other version variants
 - PostgreSQL trigram-based candidate retrieval for typo-tolerant matching
 - Metadata backfill for existing records

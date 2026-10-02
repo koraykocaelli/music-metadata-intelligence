@@ -1,8 +1,7 @@
 from datetime import datetime
+from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field
-
-from enum import Enum
 
 
 class TrackCreate(BaseModel):
@@ -24,17 +23,17 @@ class TrackRead(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-class MatchCandidate(BaseModel):
-    track_id: int
-    artist: str
-    title: str
-    score: float
-    classification: str
 
 class MatchClassification(str, Enum):
     HIGH_CONFIDENCE = "high_confidence"
     REVIEW = "review"
     NO_MATCH = "no_match"
+
+
+class MatchMethod(str, Enum):
+    ISRC = "isrc"
+    METADATA = "metadata"
+
 
 class MatchCandidate(BaseModel):
     track_id: int
@@ -42,4 +41,5 @@ class MatchCandidate(BaseModel):
     title: str
     score: float
     classification: MatchClassification
+    match_method: MatchMethod
 

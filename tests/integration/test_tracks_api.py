@@ -46,6 +46,7 @@ def test_get_tracks(client):
     assert data[0]["normalized_artist"] == "justice"
     assert data[0]["normalized_title"] == "d a n c e"
 
+
 def test_get_track_by_id(client):
     create_response = client.post(
         "/api/v1/tracks",
@@ -75,11 +76,13 @@ def test_get_track_by_id(client):
     assert data["normalized_artist"] == "kavinsky"
     assert data["normalized_title"] == "nightcall"
 
+
 def test_get_track_by_id_returns_404_when_track_does_not_exist(client):
     response = client.get("/api/v1/tracks/999999")
 
     assert response.status_code == 404
     assert response.json()["detail"] == "Track not found"
+
 
 def test_find_similar_tracks(client):
     create_response = client.post(
@@ -116,6 +119,8 @@ def test_find_similar_tracks(client):
     assert match["title"] == "Blinding Lights"
     assert match["score"] > 90
     assert match["classification"] == "high_confidence"
+    assert match["match_method"] == "metadata"
+
 
 def test_create_track_returns_409_for_duplicate_isrc(client):
     first_response = client.post(
@@ -174,3 +179,77 @@ def test_create_track_returns_409_for_duplicate_normalized_metadata(client):
         "A track with the same normalized artist and title already exists."
     )
 
+
+def test_find_similar_tracks_prioritizes_exact_isrc(client):
+    create_response = client.post(
+        "/api/v1/tracks",
+        json={
+            "artist": "The Weeknd",
+            "title": "Blinding Lights",
+            "album": "After Hours",
+            "isrc": "USUG11904206",
+        },
+    )
+
+    assert create_response.status_code == 201
+
+    response = client.post(
+        "/api/v1/tracks/similar",
+        json={
+            "artist": "Completely Wrong Artist",
+            "title": "Completely Wrong Title",
+            "album": None,
+            "isrc": "USUG11904206",
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert len(data) == 1
+
+    match = data[0]
+
+    assert match["artist"] == "The Weeknd"
+    assert match["title"] == "Blinding Lights"
+    assert match["score"] == 100.0
+    assert match["classification"] == "high_confidence"
+    assert match["match_method"] == "isrc"
+
+
+def test_find_similar_tracks_falls_back_to_metadata_when_isrc_not_found(client):
+    create_response = client.post(
+        "/api/v1/tracks",
+        json={
+            "artist": "The Weeknd",
+            "title": "Blinding Lights",
+            "album": "After Hours",
+            "isrc": "USUG11904206",
+        },
+    )
+
+    assert create_response.status_code == 201
+
+    response = client.post(
+        "/api/v1/tracks/similar",
+        json={
+            "artist": "The Weekend",
+            "title": "Blinding Light",
+            "album": None,
+            "isrc": "USAAA2600001",
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert len(data) == 1
+
+    match = data[0]
+
+    assert match["artist"] == "The Weeknd"
+    assert match["title"] == "Blinding Lights"
+    assert match["score"] > 90
+    assert match["match_method"] == "metadata"

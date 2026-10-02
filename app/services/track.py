@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.models.track import Track
 from app.repositories import track as track_repository
-from app.schemas.track import TrackCreate
+from app.schemas.track import MatchMethod, TrackCreate
 from app.services.normalization import normalize_text, normalize_track_title
 from app.services.matching import calculate_similarity, classify_similarity
 
@@ -57,6 +57,26 @@ def find_similar_tracks(
     track_data: TrackCreate,
     threshold: float = 80.0,
 ) -> list[dict[str, object]]:
+    # ISRC is a strong recording identifier.
+    # If an exact ISRC match exists, return it directly.
+    if track_data.isrc:
+        isrc_match = track_repository.get_track_by_isrc(
+            db,
+            track_data.isrc,
+        )
+
+        if isrc_match is not None:
+            return [
+                {
+                    "track_id": isrc_match.id,
+                    "artist": isrc_match.artist,
+                    "title": isrc_match.title,
+                    "score": 100.0,
+                    "classification": classify_similarity(100.0),
+                    "match_method": MatchMethod.ISRC,
+                }
+            ]
+
     normalized_artist = normalize_text(track_data.artist)
     normalized_title = normalize_track_title(track_data.title)
 
@@ -87,6 +107,7 @@ def find_similar_tracks(
                     "title": candidate.title,
                     "score": score,
                     "classification": classify_similarity(score),
+                    "match_method": MatchMethod.METADATA,
                 }
             )
 
