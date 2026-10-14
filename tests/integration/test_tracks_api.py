@@ -1,3 +1,4 @@
+
 def test_create_track(client):
     response = client.post(
         "/api/v1/tracks",
@@ -253,3 +254,175 @@ def test_find_similar_tracks_falls_back_to_metadata_when_isrc_not_found(client):
     assert match["title"] == "Blinding Lights"
     assert match["score"] > 90
     assert match["match_method"] == "metadata"
+
+
+def test_batch_match_returns_matched_and_unmatched(client):
+    create_response = client.post(
+        "/api/v1/tracks",
+        json={
+            "artist": "The Weeknd",
+            "title": "Blinding Lights",
+            "isrc": "USUG11904206",
+        },
+    )
+
+    assert create_response.status_code == 201
+
+    response = client.post(
+        "/api/v1/tracks/batch/match",
+        json={
+            "tracks": [
+                {
+                    "artist": "The Weekend",
+                    "title": "Blinding Light",
+                },
+                {
+                    "artist": "Unknown Artist",
+                    "title": "Completely New Song",
+                },
+            ]
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["total"] == 2
+    assert data["matched"] == 1
+    assert data["review"] == 0
+    assert data["unmatched"] == 1
+
+    assert data["results"][0]["input_index"] == 0
+    assert data["results"][0]["status"] == "matched"
+    assert data["results"][0]["matches"][0]["match_method"] == "metadata"
+
+    assert data["results"][1]["input_index"] == 1
+    assert data["results"][1]["status"] == "unmatched"
+    assert data["results"][1]["matches"] == []
+
+
+def test_batch_match_prioritizes_exact_isrc(client):
+    create_response = client.post(
+        "/api/v1/tracks",
+        json={
+            "artist": "Daft Punk",
+            "title": "One More Time",
+            "isrc": "GBDUW0000053",
+        },
+    )
+
+    assert create_response.status_code == 201
+
+    response = client.post(
+        "/api/v1/tracks/batch/match",
+        json={
+            "tracks": [
+                {
+                    "artist": "Wrong Artist",
+                    "title": "Wrong Title",
+                    "isrc": "GBDUW0000053",
+                }
+            ]
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["total"] == 1
+    assert data["matched"] == 1
+    assert data["review"] == 0
+    assert data["unmatched"] == 0
+
+    match = data["results"][0]["matches"][0]
+
+    assert data["results"][0]["status"] == "matched"
+    assert match["artist"] == "Daft Punk"
+    assert match["score"] == 100.0
+    assert match["match_method"] == "isrc"
+
+
+def test_batch_match_returns_matched_for_identical_metadata(client):
+    create_response = client.post(
+        "/api/v1/tracks",
+        json={
+            "artist": "Coldplay",
+            "title": "Viva La Vida",
+            "isrc": "GBAYE0800265",
+        },
+    )
+
+    assert create_response.status_code == 201
+
+    response = client.post(
+        "/api/v1/tracks/batch/match",
+        json={
+            "tracks": [
+                {
+                    "artist": "Coldplay",
+                    "title": "Viva La Vida",
+                }
+            ]
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["total"] == 1
+    assert data["matched"] == 1
+    assert data["review"] == 0
+    assert data["unmatched"] == 0
+    assert data["results"][0]["status"] == "matched"
+
+
+def test_batch_match_rejects_empty_tracks(client):
+    response = client.post(
+        "/api/v1/tracks/batch/match",
+        json={"tracks": []},
+    )
+
+    assert response.status_code == 422
+
+
+def test_batch_match_returns_review_for_lower_confidence_match(client):
+    create_response = client.post(
+        "/api/v1/tracks",
+        json={
+            "artist": "The Weeknd",
+            "title": "Blinding Lights",
+            "isrc": "USUG11904206",
+        },
+    )
+
+    assert create_response.status_code == 201
+
+    response = client.post(
+        "/api/v1/tracks/batch/match",
+        json={
+            "tracks": [
+                {
+                    "artist": "Weeknd",
+                    "title": "Blinding Lights",
+                }
+            ]
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["total"] == 1
+    assert data["matched"] == 0
+    assert data["review"] == 1
+    assert data["unmatched"] == 0
+
+    assert data["results"][0]["status"] == "review"
+    assert data["results"][0]["matches"][0]["classification"] == "review"
+    assert data["results"][0]["matches"][0]["match_method"] == "metadata"
+
+

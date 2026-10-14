@@ -2,7 +2,13 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
-from app.schemas.track import MatchCandidate, TrackCreate, TrackRead
+from app.schemas.track import (
+    BatchTrackRequest,
+    BatchTrackResponse,
+    MatchCandidate,
+    TrackCreate,
+    TrackRead,
+)
 from app.services import track as track_service
 
 
@@ -33,6 +39,16 @@ def find_similar_tracks(
 ) -> list[MatchCandidate]:
     return track_service.find_similar_tracks(db, track_data)
 
+@router.post(
+    "/batch/match",
+    response_model=BatchTrackResponse,
+)
+def match_batch_tracks(
+    batch_data: BatchTrackRequest,
+    db: Session = Depends(get_db),
+) -> BatchTrackResponse:
+    return track_service.match_batch_tracks(db, batch_data)
+
 
 @router.get(
     "",
@@ -61,3 +77,4 @@ def get_track(
         )
 
     return track
+

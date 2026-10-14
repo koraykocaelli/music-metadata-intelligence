@@ -13,6 +13,7 @@ The project focuses on cleaning, normalizing, comparing, and matching inconsiste
 - Weighted similarity scoring
 - Match confidence classification
 - ISRC-aware matching with metadata fallback
+- Batch metadata matching with matched, review, and unmatched results
 - Match method tracking for ISRC and metadata-based matches
 - Track version detection for remix, live, acoustic, and other version variants
 - PostgreSQL trigram-based candidate retrieval for typo-tolerant matching
@@ -26,13 +27,14 @@ The project focuses on cleaning, normalizing, comparing, and matching inconsiste
 
 Incoming metadata is processed through a structured matching pipeline:
 
-1. Normalize artist and track title metadata
-2. Retrieve potential candidates from PostgreSQL
-3. Compare artist and title metadata using fuzzy string matching
-4. Calculate artist, title, and weighted similarity scores
-5. Validate track-version compatibility
-6. Apply calibrated matching thresholds
-7. Classify matches by confidence level
+1. Check for an exact ISRC match when available
+2. Normalize artist and track title metadata
+3. Retrieve potential candidates from PostgreSQL
+4. Compare artist and title metadata using fuzzy string matching
+5. Calculate artist, title, and weighted similarity scores
+6. Validate track-version compatibility
+7. Apply calibrated matching thresholds
+8. Classify matches by confidence level
 
 This reduces unnecessary comparisons while handling spelling differences, formatting inconsistencies, title variations, and distinct track versions such as remixes, live recordings, and acoustic versions.
 
@@ -42,6 +44,7 @@ This reduces unnecessary comparisons while handling spelling differences, format
 - `GET /api/v1/tracks` — Retrieve tracks
 - `GET /api/v1/tracks/{track_id}` — Retrieve a track by ID
 - `POST /api/v1/tracks/similar` — Find similar tracks
+- `POST /api/v1/tracks/batch/match` — Match up to 100 tracks and return categorized results
 
 ## Tech Stack
 

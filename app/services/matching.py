@@ -84,3 +84,4 @@ def classify_similarity(score: float) -> MatchClassification:
         return MatchClassification.REVIEW
 
     return MatchClassification.NO_MATCH
+

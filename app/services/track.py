@@ -3,9 +3,21 @@ from sqlalchemy.orm import Session
 
 from app.models.track import Track
 from app.repositories import track as track_repository
-from app.schemas.track import MatchMethod, TrackCreate
+from app.schemas.track import (
+    BatchTrackRequest,
+    BatchTrackResponse,
+    BatchTrackResult,
+    BatchTrackStatus,
+    MatchClassification,
+    MatchMethod,
+    TrackCreate,
+)
 from app.services.normalization import normalize_text, normalize_track_title
-from app.services.matching import calculate_similarity, classify_similarity
+from app.services.matching import (
+    calculate_similarity,
+    classify_similarity,
+    is_metadata_match,
+)
 
 
 
@@ -99,7 +111,14 @@ def find_similar_tracks(
             candidate.normalized_title,
         )
 
-        if score >= threshold:
+        if score >= threshold and is_metadata_match(
+                normalized_artist,
+                normalized_title,
+                candidate.normalized_artist,
+                candidate.normalized_title,
+                raw_title_a=track_data.title,
+                raw_title_b=candidate.title,
+        ):
             matches.append(
                 {
                     "track_id": candidate.id,
@@ -116,3 +135,50 @@ def find_similar_tracks(
         key=lambda item: item["score"],
         reverse=True,
     )
+
+def match_batch_tracks(
+    db: Session,
+    batch_data: BatchTrackRequest,
+) -> BatchTrackResponse:
+    results: list[BatchTrackResult] = []
+
+    matched_count = 0
+    review_count = 0
+    unmatched_count = 0
+
+    for index, track_data in enumerate(batch_data.tracks):
+        matches = find_similar_tracks(db, track_data)
+
+        if not matches:
+            track_status = BatchTrackStatus.UNMATCHED
+            unmatched_count += 1
+
+        elif any(
+            match["classification"] == MatchClassification.HIGH_CONFIDENCE
+            for match in matches
+        ):
+            track_status = BatchTrackStatus.MATCHED
+            matched_count += 1
+
+        else:
+            track_status = BatchTrackStatus.REVIEW
+            review_count += 1
+
+        results.append(
+            BatchTrackResult(
+                input_index=index,
+                artist=track_data.artist,
+                title=track_data.title,
+                status=track_status,
+                matches=matches,
+            )
+        )
+
+    return BatchTrackResponse(
+        total=len(batch_data.tracks),
+        matched=matched_count,
+        review=review_count,
+        unmatched=unmatched_count,
+        results=results,
+    )
+

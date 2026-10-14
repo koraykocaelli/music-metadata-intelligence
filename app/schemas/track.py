@@ -43,3 +43,30 @@ class MatchCandidate(BaseModel):
     classification: MatchClassification
     match_method: MatchMethod
 
+class BatchTrackRequest(BaseModel):
+    tracks: list[TrackCreate] = Field(
+        min_length=1,
+        max_length=100,
+    )
+
+
+class BatchTrackStatus(str, Enum):
+    MATCHED = "matched"
+    REVIEW = "review"
+    UNMATCHED = "unmatched"
+
+
+class BatchTrackResult(BaseModel):
+    input_index: int
+    artist: str
+    title: str
+    status: BatchTrackStatus
+    matches: list[MatchCandidate]
+
+
+class BatchTrackResponse(BaseModel):
+    total: int
+    matched: int
+    review: int
+    unmatched: int
+    results: list[BatchTrackResult]
