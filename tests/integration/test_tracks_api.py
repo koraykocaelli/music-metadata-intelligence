@@ -425,4 +425,20 @@ def test_batch_match_returns_review_for_lower_confidence_match(client):
     assert data["results"][0]["matches"][0]["classification"] == "review"
     assert data["results"][0]["matches"][0]["match_method"] == "metadata"
 
+def test_batch_match_rejects_more_than_100_tracks(client):
+    tracks = [
+        {
+            "artist": f"Artist {index}",
+            "title": f"Song {index}",
+        }
+        for index in range(101)
+    ]
+
+    response = client.post(
+        "/api/v1/tracks/batch/match",
+        json={"tracks": tracks},
+    )
+
+    assert response.status_code == 422
+
 
