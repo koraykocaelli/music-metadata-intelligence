@@ -161,6 +161,21 @@ def find_similar_tracks(
         reverse=True,
     )
 
+def determine_match_status(matches: list[dict[str, object]]) -> BatchTrackStatus:
+    """Shared matched/review/unmatched rule for batch and catalog matching."""
+
+    if not matches:
+        return BatchTrackStatus.UNMATCHED
+
+    if any(
+        match["classification"] == MatchClassification.HIGH_CONFIDENCE
+        for match in matches
+    ):
+        return BatchTrackStatus.MATCHED
+
+    return BatchTrackStatus.REVIEW
+
+
 def match_batch_tracks(
     db: Session,
     batch_data: BatchTrackRequest,
@@ -173,20 +188,13 @@ def match_batch_tracks(
 
     for index, track_data in enumerate(batch_data.tracks):
         matches = find_similar_tracks(db, track_data)
+        track_status = determine_match_status(matches)
 
-        if not matches:
-            track_status = BatchTrackStatus.UNMATCHED
+        if track_status == BatchTrackStatus.UNMATCHED:
             unmatched_count += 1
-
-        elif any(
-            match["classification"] == MatchClassification.HIGH_CONFIDENCE
-            for match in matches
-        ):
-            track_status = BatchTrackStatus.MATCHED
+        elif track_status == BatchTrackStatus.MATCHED:
             matched_count += 1
-
         else:
-            track_status = BatchTrackStatus.REVIEW
             review_count += 1
 
         results.append(

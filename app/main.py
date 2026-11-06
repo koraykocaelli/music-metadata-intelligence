@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from sqlalchemy import text
 
+from app.api.catalog import router as catalog_router
 from app.api.tracks import router as tracks_router
 from app.core.config import settings
 from app.db.session import engine
@@ -12,6 +13,7 @@ app = FastAPI(
 )
 
 app.include_router(tracks_router)
+app.include_router(catalog_router)
 
 
 @app.get("/health")

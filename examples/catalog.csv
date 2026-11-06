@@ -1,0 +1,9 @@
+artist,title,album,isrc,source_id
+Neon Harbor,Midnight Signal (Official Audio),,ZZNHB2600001,cat-001
+Luna Vael,Paper Satellites,Orbit Notes,,cat-002
+Glass Orchard,Slow Motion Summer,,,cat-003
+Unknown Collective,Brand New Song,,,cat-004
+   ,Missing Artist,,,cat-005
+Neon Harbor,Midnight Signal,,BAD-ISRC,cat-006
+СЕВЕРНЫЙ СВЕТ,Тихая гавань,,,cat-007
+"=HYPERLINK(""http://example.com"")",Formula Test,,,cat-008

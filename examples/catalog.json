@@ -1,0 +1,10 @@
+[
+  {"artist": "Neon Harbor", "title": "Midnight Signal (Official Audio)", "isrc": "ZZNHB2600001"},
+  {"artist": "Luna Vael", "title": "Paper Satellites", "album": "Orbit Notes"},
+  {"artist": "Glass Orchard", "title": "Slow Motion Summer"},
+  {"artist": "Unknown Collective", "title": "Brand New Song"},
+  {"artist": "   ", "title": "Missing Artist"},
+  {"artist": "Neon Harbor", "title": "Midnight Signal", "isrc": "BAD-ISRC"},
+  {"artist": "СЕВЕРНЫЙ СВЕТ", "title": "Тихая гавань"},
+  {"artist": "=HYPERLINK(\"http://example.com\")", "title": "Formula Test"}
+]
