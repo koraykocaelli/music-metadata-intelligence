@@ -82,9 +82,40 @@ Swagger UI will be available at `http://127.0.0.1:8000/docs`.
 
 ### Run Tests
 
+Unit tests need no PostgreSQL, Docker, or `.env`:
+
 ```bash
-pytest
+pytest -m "not integration"
 ```
+
+Integration tests (`tests/integration`, marked `integration`) need a separate,
+dedicated PostgreSQL test database. One-time setup with the Docker database:
+
+```bash
+docker compose exec postgres createdb -U music_user music_metadata_test
+docker compose exec postgres psql -U music_user -d music_metadata_test -c "CREATE EXTENSION IF NOT EXISTS pg_trgm"
+```
+
+Set `TEST_DATABASE_URL` in `.env` (see `.env.example`), then run:
+
+```bash
+pytest -m integration -rs
+```
+
+Safety rules enforced before any schema change:
+
+- `TEST_DATABASE_URL` must be a PostgreSQL URL with an explicit host and a
+  lowercase database name ending in `_test`.
+- Its database name must differ from the one in `DATABASE_URL`.
+- Query parameters that could redirect the connection (`dbname`, `host`,
+  `port`, `service`, `options`, ...) are rejected.
+- After connecting, `current_database()` must match the validated name.
+- Tables are created in a disposable `pytest_<random>` schema, which is the only
+  thing dropped on teardown. The application database is never touched.
+
+If `TEST_DATABASE_URL` is missing, integration tests are skipped; if it is
+malformed or unsafe, or PostgreSQL is unreachable, they error out without
+running any DDL. Plain `pytest` runs both suites.
 
 ### Run Matching Evaluation
 
