@@ -23,11 +23,68 @@ VERSION_PATTERNS = {
 }
 
 
+# Latin letters that have no Unicode decomposition to an ASCII base letter.
+# Previously these were silently dropped (e.g. "Mø" -> "m").
+LATIN_TRANSLITERATIONS = str.maketrans(
+    {
+        "ß": "ss",
+        "ẞ": "ss",
+        "æ": "ae",
+        "Æ": "ae",
+        "œ": "oe",
+        "Œ": "oe",
+        "ø": "o",
+        "Ø": "o",
+        "ł": "l",
+        "Ł": "l",
+        "đ": "d",
+        "Đ": "d",
+        "ð": "d",
+        "Ð": "d",
+        "þ": "th",
+        "Þ": "th",
+        "ı": "i",
+    }
+)
+
+
+def _is_mark(character: str) -> bool:
+    return unicodedata.category(character).startswith("M")
+
+
+def _strip_latin_diacritics(value: str) -> str:
+    # Remove combining marks only when they decorate an ASCII letter
+    # ("é" -> "e"). Marks in other scripts (Devanagari vowel signs, Japanese
+    # dakuten, ...) carry meaning and are kept, then recomposed with NFC.
+    decomposed = unicodedata.normalize("NFKD", value)
+    characters: list[str] = []
+    previous_base = ""
+
+    for character in decomposed:
+        if _is_mark(character):
+            if previous_base.isascii():
+                continue
+        else:
+            previous_base = character
+
+        characters.append(character)
+
+    return unicodedata.normalize("NFC", "".join(characters))
+
+
 def normalize_text(value: str) -> str:
-    normalized = unicodedata.normalize("NFKD", value)
-    normalized = normalized.encode("ascii", "ignore").decode("ascii")
-    normalized = normalized.lower()
-    normalized = re.sub(r"[^a-z0-9\s]", " ", normalized)
+    # Lowercase before stripping diacritics: "İ".lower() yields "i" plus a
+    # combining dot, which must also be removed.
+    normalized = value.lower().translate(LATIN_TRANSLITERATIONS)
+    normalized = _strip_latin_diacritics(normalized)
+    # Keep letters, digits and combining marks of any script; everything else
+    # (punctuation, symbols, underscores) becomes a separator.
+    normalized = "".join(
+        character
+        if character.isalnum() or _is_mark(character)
+        else " "
+        for character in normalized
+    )
     normalized = re.sub(r"\s+", " ", normalized)
 
     return normalized.strip()

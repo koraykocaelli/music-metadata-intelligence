@@ -16,8 +16,12 @@ def calculate_similarity_components(
     artist_b: str,
     title_b: str,
 ) -> tuple[float, float]:
-    artist_score = fuzz.ratio(artist_a, artist_b)
-    title_score = fuzz.ratio(title_a, title_b)
+    # Empty normalized values carry no information (e.g. "!!!"), so they must
+    # never produce similarity: fuzz.ratio("", "") would otherwise be 100.
+    artist_score = (
+        fuzz.ratio(artist_a, artist_b) if artist_a and artist_b else 0.0
+    )
+    title_score = fuzz.ratio(title_a, title_b) if title_a and title_b else 0.0
 
     return round(artist_score, 2), round(title_score, 2)
 
@@ -48,6 +52,9 @@ def is_metadata_match(
     raw_title_a: str | None = None,
     raw_title_b: str | None = None,
 ) -> bool:
+    if not (artist_a and title_a and artist_b and title_b):
+        return False
+
     if raw_title_a is not None and raw_title_b is not None:
         versions_a = detect_track_versions(raw_title_a)
         versions_b = detect_track_versions(raw_title_b)

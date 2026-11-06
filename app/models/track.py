@@ -13,7 +13,14 @@ class Track(Base):
     artist: Mapped[str] = mapped_column(String(255), nullable=False)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     album: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    isrc: Mapped[str | None] = mapped_column(String(12), nullable=True, index=True)
+    # Unique index: the database itself rejects concurrent duplicate ISRCs.
+    # NULLs are allowed multiple times (tracks without an ISRC).
+    isrc: Mapped[str | None] = mapped_column(
+        String(12),
+        nullable=True,
+        index=True,
+        unique=True,
+    )
 
     normalized_artist: Mapped[str | None] = mapped_column(
         String(255),

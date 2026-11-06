@@ -1,9 +1,12 @@
+import pytest
+
 from app.schemas.track import MatchClassification
 from app.services.matching import (
     calculate_similarity,
     classify_similarity,
     is_metadata_match,
 )
+from app.services.normalization import normalize_text, normalize_track_title
 
 
 def test_identical_metadata_has_full_similarity() -> None:
@@ -78,4 +81,46 @@ def test_metadata_match_accepts_noise_title_variation() -> None:
         "blinding lights",
         raw_title_a="Blinding Lights",
         raw_title_b="Blinding Lights (Official Audio)",
+    )
+
+
+# --- Empty and non-Latin metadata must never match spuriously -------------
+
+
+@pytest.mark.parametrize(
+    ("artist_a", "title_a", "artist_b", "title_b"),
+    [
+        ("", "", "", ""),
+        ("", "blinding lights", "", "blinding lights"),
+        ("the weeknd", "", "the weeknd", ""),
+        ("the weeknd", "blinding lights", "", ""),
+    ],
+)
+def test_empty_normalized_metadata_never_matches(
+    artist_a, title_a, artist_b, title_b
+) -> None:
+    assert not is_metadata_match(artist_a, title_a, artist_b, title_b)
+
+
+def test_empty_normalized_metadata_has_no_similarity() -> None:
+    assert calculate_similarity("", "", "", "") == 0.0
+    assert calculate_similarity("", "blinding lights", "", "blinding lights") == 60.0
+
+
+def test_unrelated_non_latin_tracks_do_not_match() -> None:
+    # Previously both artists normalized to "" and this pair matched.
+    assert not is_metadata_match(
+        normalize_text("Кино"),
+        normalize_track_title("Группа крови"),
+        normalize_text("宇多田ヒカル"),
+        normalize_track_title("Звезда"),
+    )
+
+
+def test_identical_non_latin_tracks_match() -> None:
+    assert is_metadata_match(
+        normalize_text("Кино"),
+        normalize_track_title("Группа крови"),
+        normalize_text("КИНО"),
+        normalize_track_title("Группа Крови (Official Audio)"),
     )

@@ -154,10 +154,13 @@ def db_session(prepare_test_database):
     connection = prepare_test_database.connect()
     transaction = connection.begin()
 
+    # create_savepoint: application commit()/rollback() act on a SAVEPOINT,
+    # so a rolled-back IntegrityError cannot end the per-test transaction.
     session = sessionmaker(
         bind=connection,
         autoflush=False,
         autocommit=False,
+        join_transaction_mode="create_savepoint",
     )()
 
     try:

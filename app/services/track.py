@@ -1,4 +1,5 @@
 from fastapi import HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.models.track import Track
@@ -19,6 +20,17 @@ from app.services.matching import (
     is_metadata_match,
 )
 
+ISRC_UNIQUE_INDEX = "ix_tracks_isrc"
+UNIQUE_VIOLATION_SQLSTATE = "23505"
+
+
+def _is_unique_violation(error: IntegrityError, constraint_name: str) -> bool:
+    diag = getattr(error.orig, "diag", None)
+
+    return (
+        getattr(error.orig, "sqlstate", None) == UNIQUE_VIOLATION_SQLSTATE
+        and getattr(diag, "constraint_name", None) == constraint_name
+    )
 
 
 def create_track(db: Session, track_data: TrackCreate) -> Track:
@@ -49,12 +61,23 @@ def create_track(db: Session, track_data: TrackCreate) -> Track:
             detail="A track with the same normalized artist and title already exists.",
         )
 
-    return track_repository.create_track(
-        db,
-        track_data,
-        normalized_artist=normalized_artist,
-        normalized_title=normalized_title,
-    )
+    try:
+        return track_repository.create_track(
+            db,
+            track_data,
+            normalized_artist=normalized_artist,
+            normalized_title=normalized_title,
+        )
+    except IntegrityError as error:
+        # A concurrent request inserted the same ISRC between the check above
+        # and this insert; the unique index rejected it (session rolled back).
+        if _is_unique_violation(error, ISRC_UNIQUE_INDEX):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="A track with this ISRC already exists.",
+            ) from error
+
+        raise
 
 
 def get_tracks(db: Session) -> list[Track]:
@@ -101,7 +124,9 @@ def find_similar_tracks(
     matches: list[dict[str, object]] = []
 
     for candidate in candidates:
-        if candidate.normalized_artist is None or candidate.normalized_title is None:
+        # Skip candidates without usable normalized metadata (None or empty,
+        # e.g. legacy rows whose text was stripped by older normalization).
+        if not candidate.normalized_artist or not candidate.normalized_title:
             continue
 
         score = calculate_similarity(

@@ -46,6 +46,37 @@ This reduces unnecessary comparisons while handling spelling differences, format
 - `POST /api/v1/tracks/similar` — Find similar tracks
 - `POST /api/v1/tracks/batch/match` — Match up to 100 tracks and return categorized results
 
+## Input Validation
+
+Track payloads (create, similar, and each batch item) are validated; invalid
+input returns `422`:
+
+- `artist` and `title` are trimmed, must be 1–255 characters, and must contain
+  at least one letter or digit after normalization (`"!!!"`, whitespace-only,
+  or noise-only titles such as `"(Official Audio)"` are rejected).
+- `album` is trimmed; a blank album is stored as `null`.
+- `isrc` must follow the ISO 3901 structure: 2-letter country code,
+  3 alphanumeric registrant characters, 2-digit year, 5-digit designation.
+  Lowercase and the hyphenated form (`us-ug1-19-04206`) are accepted and
+  stored as `USUG11904206`.
+
+Normalization folds Latin diacritics to ASCII (`Beyoncé` → `beyonce`,
+`Straße` → `strasse`) and keeps other scripts (`Кино` → `кино`), so non-Latin
+metadata is no longer reduced to an empty string. Empty normalized metadata
+never counts as a match.
+
+## Data Integrity
+
+- ISRCs are unique at the database level (unique index `ix_tracks_isrc`;
+  tracks without an ISRC are unaffected). A concurrent duplicate insert is
+  rolled back and returns `409`.
+- Normalized artist/title duplicates are rejected by the application (`409`),
+  but intentionally not by a database constraint, since distinct recordings
+  can share metadata.
+- The ISRC uniqueness migration refuses to run while duplicate ISRCs exist and
+  lists them; it never modifies or deletes rows. Resolve duplicates manually
+  before `alembic upgrade head`.
+
 ## Tech Stack
 
 - Python 3.12

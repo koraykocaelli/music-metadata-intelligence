@@ -1,3 +1,4 @@
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.models.track import Track
@@ -22,7 +23,14 @@ def create_track(
     )
 
     db.add(track)
-    db.commit()
+
+    try:
+        db.commit()
+    except IntegrityError:
+        # Leave the session usable for the caller before propagating.
+        db.rollback()
+        raise
+
     db.refresh(track)
 
     return track
