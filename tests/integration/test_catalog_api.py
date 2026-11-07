@@ -20,7 +20,7 @@ EXPECTED_EXAMPLE_STATUSES = [
     "unmatched",
     "invalid",  # whitespace-only artist
     "invalid",  # malformed ISRC
-    "matched",  # Cyrillic metadata, different case
+    "matched",  # case and accent differences ("SILVER ÉCHO")
     "unmatched",  # formula-like artist (sanitized in CSV export)
 ]
 
@@ -97,8 +97,8 @@ def test_example_catalog_is_matched_in_input_order(
     assert results[4]["errors"][0]["field"] == "artist"
     assert results[5]["errors"][0]["field"] == "isrc"
     assert results[5]["isrc"] == "BAD-ISRC"
-    assert results[6]["artist"] == "СЕВЕРНЫЙ СВЕТ"
-    assert results[6]["matches"][0]["artist"] == "Северный Свет"
+    assert results[6]["artist"] == "SILVER ÉCHO"
+    assert results[6]["matches"][0]["artist"] == "Silver Echo"
 
     # Read-only: the reference catalog is unchanged.
     assert _track_snapshot(client) == before
@@ -132,6 +132,13 @@ def test_upload_never_inserts_tracks(client) -> None:
 
 
 def test_unicode_csv_with_bom_and_quoted_multiline(client, reference_catalog) -> None:
+    # Dedicated non-Latin reference track (the example catalog is English-only).
+    created = client.post(
+        "/api/v1/tracks",
+        json={"artist": "Северный Свет", "title": "Тихая гавань", "isrc": "ZZSVS2600003"},
+    )
+    assert created.status_code == 201
+
     content = (
         "﻿Artist,Title\n"
         "Северный Свет,\"Тихая\nгавань\"\n"
@@ -146,6 +153,8 @@ def test_unicode_csv_with_bom_and_quoted_multiline(client, reference_catalog) ->
 
     assert results[0]["title"] == "Тихая\nгавань"
     assert results[0]["status"] == "matched"
+    assert results[0]["matches"][0]["artist"] == "Северный Свет"
+    assert results[0]["matches"][0]["match_method"] == "metadata"
     assert results[1]["artist"] == "宇多田ヒカル"
     assert results[1]["status"] == "unmatched"
 
@@ -270,7 +279,7 @@ def test_csv_export_download(client, reference_catalog) -> None:
     assert [row["input_index"] for row in rows] == [str(i) for i in range(8)]
     assert rows[0]["best_match_method"] == "isrc"
     assert rows[0]["best_match_score"] == "100.0"
-    assert rows[6]["artist"] == "СЕВЕРНЫЙ СВЕТ"
+    assert rows[6]["artist"] == "SILVER ÉCHO"
     assert rows[7]["artist"] == "'=HYPERLINK(\"http://example.com\")"
     assert "isrc:" in rows[5]["errors"]
 

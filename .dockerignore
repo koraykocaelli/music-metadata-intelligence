@@ -1,0 +1,23 @@
+# Never send local secrets, environments or history to the build context.
+.env
+.env.*
+*.env
+.git
+.gitignore
+.github
+.venv
+venv
+.idea
+.vscode
+.pytest_cache
+**/__pycache__
+**/*.py[cod]
+*.dump
+*.sql
+*.sqlite
+*.db
+backups
+tests
+README.md
+Dockerfile
+docker-compose*.yaml

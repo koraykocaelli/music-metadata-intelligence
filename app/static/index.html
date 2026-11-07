@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Music Metadata Intelligence</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/static/app.css">
+  <script type="module" src="/static/js/main.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <div class="shell">
+    <aside class="sidebar" aria-label="Primary">
+      <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+          <rect x="3" y="12" width="3" height="8" rx="1.5"></rect>
+          <rect x="9" y="7" width="3" height="18" rx="1.5"></rect>
+          <rect x="15" y="10" width="3" height="12" rx="1.5"></rect>
+          <rect x="21" y="5" width="3" height="22" rx="1.5"></rect>
+          <rect x="27" y="13" width="3" height="6" rx="1.5"></rect>
+        </svg>
+        <span class="brand-name">Music Metadata Intelligence</span>
+        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="nav">
+          <span class="visually-hidden">Menu</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+        </button>
+      </div>
+
+      <nav id="nav" class="nav">
+        <a href="#/overview" data-route="overview">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13h6V4H4zM14 20h6v-9h-6zM4 20h6v-4H4zM14 4v4h6V4z"></path></svg>
+          Overview
+        </a>
+        <a href="#/library" data-route="library">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4v16M10 4v16M15 4l4 16"></path></svg>
+          Track library
+        </a>
+        <p class="nav-group">Matching</p>
+        <a href="#/match" data-route="match">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"></circle><path d="M15 15l5 5"></path></svg>
+          Match a track
+        </a>
+        <a href="#/batch" data-route="batch">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"></path></svg>
+          Batch match
+        </a>
+        <a href="#/catalog" data-route="catalog">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M7 9l5-5 5 5M5 20h14"></path></svg>
+          Match a file
+        </a>
+        <p class="nav-group">Reference</p>
+        <a href="#/rules" data-route="rules">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18h16M7 18V9M12 18V5M17 18v-6"></path></svg>
+          How matching works
+        </a>
+      </nav>
+
+      <div class="sidebar-foot">
+        <p id="db-status" class="db-status" data-state="unknown">
+          <span class="dot" aria-hidden="true"></span>
+          <span class="db-status-text">Checking database…</span>
+        </p>
+        <p class="version"><a href="/docs">API docs</a><span id="app-version"></span></p>
+      </div>
+    </aside>
+
+    <main id="main" class="main" tabindex="-1">
+
+      <!-- Overview -->
+      <section class="view" data-view="overview" aria-labelledby="overview-title" hidden>
+        <header class="page-head">
+          <h1 id="overview-title">Overview</h1>
+          <p class="page-lede">Match incoming music metadata against your reference catalog. Recordings are matched by ISRC first, then by normalized artist and title.</p>
+        </header>
+
+        <div class="metrics" aria-live="polite">
+          <article class="metric">
+            <h2 class="metric-label">Reference tracks</h2>
+            <p class="metric-value" id="metric-tracks">—</p>
+            <p class="metric-note">Stored in the catalog database</p>
+          </article>
+          <article class="metric">
+            <h2 class="metric-label">ISRC coverage</h2>
+            <p class="metric-value" id="metric-isrc">—</p>
+            <p class="metric-note" id="metric-isrc-note">Tracks with an ISRC</p>
+          </article>
+          <article class="metric">
+            <h2 class="metric-label">Artists</h2>
+            <p class="metric-value" id="metric-artists">—</p>
+            <p class="metric-note">Distinct normalized names</p>
+          </article>
+          <article class="metric">
+            <h2 class="metric-label">Last added</h2>
+            <p class="metric-value metric-value-small" id="metric-latest">—</p>
+            <p class="metric-note" id="metric-latest-note">Most recent reference track</p>
+          </article>
+        </div>
+        <p id="overview-error" class="inline-error" role="alert" hidden></p>
+
+        <h2 class="section-title">Workflows</h2>
+        <div class="workflows">
+          <a class="workflow" href="#/match">
+            <h3>Match a track</h3>
+            <p>Check one recording and inspect every candidate, its score and why it was classified that way.</p>
+          </a>
+          <a class="workflow" href="#/batch">
+            <h3>Batch match</h3>
+            <p>Match up to 100 tracks at once and work through the rows that need review.</p>
+          </a>
+          <a class="workflow" href="#/catalog">
+            <h3>Match a file</h3>
+            <p>Compare a CSV or JSON file of up to 1,000 rows with the reference catalog and download the results.</p>
+          </a>
+          <a class="workflow" href="#/library">
+            <h3>Track library</h3>
+            <p>Browse, search and add the reference recordings that every match is compared against.</p>
+          </a>
+        </div>
+
+        <h2 class="section-title">Pipeline</h2>
+        <ol class="pipeline">
+          <li><strong>ISRC lookup</strong><span>Exact identifier match, score 100</span></li>
+          <li><strong>Normalize</strong><span>Case, accents, punctuation, title noise</span></li>
+          <li><strong>Retrieve</strong><span>Trigram candidates from PostgreSQL</span></li>
+          <li><strong>Score</strong><span>40% artist + 60% title similarity</span></li>
+          <li><strong>Classify</strong><span>High confidence ≥ 95, review ≥ 80</span></li>
+        </ol>
+      </section>
+
+      <!-- Track library -->
+      <section class="view" data-view="library" aria-labelledby="library-title" hidden>
+        <header class="page-head page-head-row">
+          <div>
+            <h1 id="library-title">Track library</h1>
+            <p class="page-lede">This is the reference catalog: the recordings stored in the connected database. Every match, single, batch or file, is compared only against these tracks.</p>
+          </div>
+          <button type="button" class="button primary" id="add-track-open">Add track</button>
+        </header>
+
+        <div class="toolbar">
+          <label class="search">
+            <span class="visually-hidden">Search tracks</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"></circle><path d="M15 15l5 5"></path></svg>
+            <input id="library-search" type="search" placeholder="Search artist, title, album or ISRC" autocomplete="off">
+          </label>
+          <label class="check">
+            <input id="library-isrc-only" type="checkbox">
+            With ISRC only
+          </label>
+          <p id="library-count" class="toolbar-note" aria-live="polite"></p>
+        </div>
+
+        <div class="card table-card">
+          <table class="data-table" id="library-table">
+            <caption class="visually-hidden">Reference tracks</caption>
+            <thead>
+              <tr>
+                <th scope="col"><button type="button" class="sort" data-sort="artist">Artist</button></th>
+                <th scope="col"><button type="button" class="sort" data-sort="title">Title</button></th>
+                <th scope="col"><button type="button" class="sort" data-sort="album">Album</button></th>
+                <th scope="col"><button type="button" class="sort" data-sort="isrc">ISRC</button></th>
+                <th scope="col"><button type="button" class="sort" data-sort="created_at">Added</button></th>
+                <th scope="col"><span class="visually-hidden">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody id="library-body"></tbody>
+          </table>
+          <div id="library-state" class="table-state" role="status"></div>
+        </div>
+        <button type="button" class="button ghost" id="library-more" hidden>Show more</button>
+      </section>
+
+      <!-- Match a track -->
+      <section class="view" data-view="match" aria-labelledby="match-title" hidden>
+        <header class="page-head">
+          <h1 id="match-title">Match a track</h1>
+          <p class="page-lede">Enter the metadata you received. If its ISRC exists in the reference catalog, that decides the match; otherwise artist and title are compared. Only the reference catalog in the connected database is searched.</p>
+        </header>
+
+        <div class="split">
+          <form id="match-form" class="card form-card" novalidate>
+            <div class="field">
+              <label for="match-artist">Artist <span class="req">required</span></label>
+              <input id="match-artist" name="artist" maxlength="255" autocomplete="off" required>
+            </div>
+            <div class="field">
+              <label for="match-title-input">Title <span class="req">required</span></label>
+              <input id="match-title-input" name="title" maxlength="255" autocomplete="off" required>
+            </div>
+            <div class="field">
+              <label for="match-album">Album</label>
+              <input id="match-album" name="album" maxlength="255" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="match-isrc">ISRC</label>
+              <input id="match-isrc" name="isrc" class="mono" maxlength="15" autocomplete="off" placeholder="e.g. USUG11904206" aria-describedby="match-isrc-hint">
+              <p id="match-isrc-hint" class="field-hint">12 characters; hyphens allowed.</p>
+            </div>
+            <p id="match-form-error" class="inline-error" role="alert" hidden></p>
+            <div class="form-actions">
+              <button type="submit" class="button primary" id="match-submit">Find matches</button>
+              <button type="button" class="button ghost" id="match-clear">Clear</button>
+            </div>
+            <p class="field-hint">Scores are deterministic similarity scores from 0 to 100, not probabilities. Matching never changes the catalog.</p>
+          </form>
+
+          <div class="results-pane" id="match-results" aria-live="polite">
+            <div class="placeholder">
+              <h2>Candidates appear here</h2>
+              <p>Each candidate shows its similarity score on the rule scale, its classification and whether it was found by ISRC or by artist and title.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Batch match -->
+      <section class="view" data-view="batch" aria-labelledby="batch-title" hidden>
+        <header class="page-head">
+          <h1 id="batch-title">Batch match</h1>
+          <p class="page-lede">Match up to 100 tracks in one request against the reference catalog. Nothing is saved: no tracks are added and results are not stored. Empty rows are skipped.</p>
+        </header>
+
+        <div class="card">
+          <div class="batch-editor-head">
+            <h2 class="card-title">Input tracks <span id="batch-row-count" class="muted"></span></h2>
+            <div class="button-row">
+              <button type="button" class="button ghost" id="batch-sample">Use sample rows</button>
+              <button type="button" class="button ghost" id="batch-add">Add row</button>
+              <button type="button" class="button ghost" id="batch-clear">Clear all</button>
+            </div>
+          </div>
+          <div class="batch-editor-scroll">
+            <table class="data-table editor-table">
+              <caption class="visually-hidden">Tracks to match</caption>
+              <thead>
+                <tr>
+                  <th scope="col" class="num">#</th>
+                  <th scope="col">Artist</th>
+                  <th scope="col">Title</th>
+                  <th scope="col">Album</th>
+                  <th scope="col">ISRC</th>
+                  <th scope="col"><span class="visually-hidden">Remove</span></th>
+                </tr>
+              </thead>
+              <tbody id="batch-rows"></tbody>
+            </table>
+          </div>
+          <p id="batch-error" class="inline-error" role="alert" hidden></p>
+          <div class="form-actions">
+            <button type="button" class="button primary" id="batch-submit">Match tracks</button>
+            <p id="batch-status" class="status-text" role="status"></p>
+          </div>
+        </div>
+
+        <div id="batch-results" class="results-block" hidden>
+          <div class="results-head">
+            <h2 class="section-title">Results</h2>
+          </div>
+          <div class="status-meter" id="batch-meter" role="group" aria-label="Rows by status"></div>
+          <div class="filters" id="batch-filters" role="group" aria-label="Filter rows by status"></div>
+          <p class="review-hint" id="batch-review-hint" hidden>Rows marked <strong>Review</strong> have a plausible candidate below the high-confidence threshold. Open a row to compare the input with its candidates before deciding.</p>
+          <div class="result-list" id="batch-list"></div>
+          <p id="batch-empty-filter" class="empty-note" hidden>No rows with this status.</p>
+        </div>
+      </section>
+
+      <!-- Catalog upload -->
+      <section class="view" data-view="catalog" aria-labelledby="catalog-title" hidden>
+        <header class="page-head">
+          <h1 id="catalog-title">Match a file</h1>
+          <p class="page-lede">Check a whole file of track metadata against the reference catalog. This is matching, not an import: the uploaded rows are never added to the database, and the file is not stored.</p>
+        </header>
+
+        <ol class="steps">
+          <li><strong>Upload</strong><span>A CSV or JSON file with artist and title, plus album and ISRC when available.</span></li>
+          <li><strong>Compare</strong><span>Every row is validated and matched against the reference catalog.</span></li>
+          <li><strong>Review</strong><span>Filter rows by status, open a row to inspect its candidates, and download the results as CSV or JSON.</span></li>
+        </ol>
+
+        <div class="card upload-card">
+          <div class="upload-row">
+            <input id="file-input" class="visually-hidden" type="file" accept=".csv,.json,text/csv,application/json">
+            <label class="button secondary" for="file-input">Choose file</label>
+            <span id="file-name" class="file-name is-empty">No file selected</span>
+          </div>
+          <p class="field-hint">UTF-8 CSV or JSON, up to 1 MB and 1,000 rows. Columns: <code>artist</code>, <code>title</code>, optional <code>album</code> and <code>isrc</code>.</p>
+          <p class="field-hint">Or try the example catalog:
+            <button type="button" class="link" data-example="catalog.csv">example CSV</button>
+            <button type="button" class="link" data-example="catalog.json">example JSON</button>
+          </p>
+          <div class="form-actions">
+            <button id="match-button" type="button" class="button primary" disabled>Match file</button>
+            <p id="upload-status" class="status-text" role="status" aria-live="polite"></p>
+          </div>
+        </div>
+
+        <div id="results" class="results-block" hidden>
+          <div class="results-head">
+            <h2 id="results-heading" class="section-title" tabindex="-1">Results</h2>
+            <div class="button-row">
+              <button type="button" class="button secondary" data-download="csv">Download CSV</button>
+              <button type="button" class="button secondary" data-download="json">Download JSON</button>
+            </div>
+          </div>
+          <div id="meter" class="status-meter" role="group" aria-label="Rows by status"></div>
+          <div id="legend" class="filters" role="group" aria-label="Filter rows by status"></div>
+          <p id="ignored" class="field-hint" hidden></p>
+          <div class="result-list" id="rows-body"></div>
+          <p id="empty-filter" class="empty-note" hidden>No rows with this status.</p>
+        </div>
+      </section>
+
+      <!-- How matching works -->
+      <section class="view" data-view="rules" aria-labelledby="rules-title" hidden>
+        <header class="page-head">
+          <h1 id="rules-title">How matching works</h1>
+          <p class="page-lede">Matching is deterministic: the same input always gives the same result. Scores come from string similarity rules, not from a trained model, and they are not probabilities.</p>
+        </header>
+
+        <div class="card">
+          <h2 class="card-title">The rule scale</h2>
+          <p class="body-text">Every metadata candidate gets a score from 0 to 100. Its position on this scale decides its classification.</p>
+          <div class="scale-demo" aria-hidden="true">
+            <div class="scale scale-large">
+              <span class="zone zone-none"></span><span class="zone zone-review"></span><span class="zone zone-high"></span>
+            </div>
+            <div class="scale-ticks"><span>0</span><span class="tick-80">80</span><span class="tick-95">95</span></div>
+          </div>
+          <dl class="class-list">
+            <div><dt><span class="badge" data-class="high_confidence">High confidence</span></dt><dd>Score 95 or higher. The row counts as <strong>matched</strong>.</dd></div>
+            <div><dt><span class="badge" data-class="review">Review</span></dt><dd>Score from 80 to below 95. A plausible candidate that a person should confirm.</dd></div>
+            <div><dt><span class="badge" data-class="no_match">No match</span></dt><dd>Below 80, or rejected by a rule. Not returned as a candidate; the row is <strong>unmatched</strong>.</dd></div>
+          </dl>
+        </div>
+
+        <div class="two-col">
+          <div class="card">
+            <h2 class="card-title"><span class="method-chip" data-method="isrc">ISRC</span> Identifier match</h2>
+            <p class="body-text">If the input has a valid ISRC that exists in the reference catalog, that recording is returned directly with score 100, and artist and title are not compared. If the ISRC is missing or not in the catalog, matching falls back to metadata. It's only as reliable as the ISRCs in your data.</p>
+          </div>
+          <div class="card">
+            <h2 class="card-title"><span class="method-chip" data-method="metadata">Metadata</span> Artist and title match</h2>
+            <p class="body-text">Artist and title are normalized, then compared with RapidFuzz (<code>fuzz.ratio</code>). The score is 40% artist similarity plus 60% title similarity. A candidate is accepted only if the artist similarity is at least 60, the title similarity at least 92 and the weighted score at least 80.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Pipeline</h2>
+          <ol class="rule-steps">
+            <li><strong>ISRC lookup.</strong> Exact identifier match in the reference catalog, if an ISRC was given.</li>
+            <li><strong>Normalization.</strong> Lowercase, Latin accents folded, punctuation removed, whitespace collapsed, title noise removed.</li>
+            <li><strong>Candidate retrieval.</strong> PostgreSQL's <code>pg_trgm</code> returns up to 100 reference tracks whose normalized artist <em>or</em> title has a trigram similarity of at least 0.3.</li>
+            <li><strong>Scoring.</strong> Each candidate gets a RapidFuzz similarity for artist and for title, weighted 40% / 60%.</li>
+            <li><strong>Rules.</strong> The minimum artist, title and weighted scores, plus the version check below.</li>
+            <li><strong>Classification.</strong> Accepted candidates are labelled by score and sorted best first.</li>
+          </ol>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Rules that prevent false matches</h2>
+          <ul class="rule-list">
+            <li><strong>Version check.</strong> Remix, live, acoustic, instrumental, radio edit, extended mix, remastered, sped up and slowed versions never match a different version.</li>
+            <li><strong>Title noise is removed.</strong> "Official Audio", "Official Video", "Official Music Video", "Lyric Video" and "Lyrics" are ignored when comparing titles.</li>
+            <li><strong>Unicode aware.</strong> Latin accents are folded (Beyoncé → beyonce); other scripts such as Cyrillic or Japanese are kept, not discarded.</li>
+            <li><strong>Empty metadata never matches.</strong> Inputs like "!!!" are rejected during validation.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Rules, not machine learning</h2>
+          <p class="body-text">There is no trained model. Normalization, retrieval, scoring and thresholds are fixed rules, so the same input against the same catalog always gives the same result, and every decision can be explained from the score and the rules above. A score of 95 means 95 out of 100 string similarity under these rules, not a 95% probability that two records are the same recording.</p>
+          <p class="body-text">Matching only knows the reference catalog in the connected database. <strong>Unmatched</strong> means no reference track passed the rules; it does not mean the recording doesn't exist elsewhere.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="add-track-dialog" class="dialog" aria-labelledby="add-track-title">
+    <form id="add-track-form" method="dialog" novalidate>
+      <header class="dialog-head">
+        <h2 id="add-track-title">Add reference track</h2>
+        <p class="dialog-note">Creates a permanent reference record in the database this application is connected to. It becomes a match candidate for every future search. Records can't be edited or deleted from this interface. Duplicate ISRCs and duplicate normalized artist + title are rejected.</p>
+      </header>
+      <div class="field">
+        <label for="add-artist">Artist <span class="req">required</span></label>
+        <input id="add-artist" name="artist" maxlength="255" autocomplete="off" required>
+      </div>
+      <div class="field">
+        <label for="add-title">Title <span class="req">required</span></label>
+        <input id="add-title" name="title" maxlength="255" autocomplete="off" required>
+      </div>
+      <div class="field">
+        <label for="add-album">Album</label>
+        <input id="add-album" name="album" maxlength="255" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="add-isrc">ISRC</label>
+        <input id="add-isrc" name="isrc" class="mono" maxlength="15" autocomplete="off">
+      </div>
+      <p id="add-track-error" class="inline-error" role="alert" hidden></p>
+      <div class="form-actions dialog-actions">
+        <button type="button" class="button ghost" id="add-track-cancel">Cancel</button>
+        <button type="submit" class="button primary" id="add-track-submit" value="default">Add track</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast-region" class="toast-region" role="status" aria-live="polite"></div>
+</body>
+</html>

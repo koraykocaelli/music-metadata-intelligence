@@ -1,15 +1,59 @@
+# Local-only development stack. Ports are published on the loopback
+# interfaces only (127.0.0.1 and [::1]); [::1] keeps "localhost" URLs fast on
+# systems that resolve localhost to IPv6 first.
+# Configuration comes from environment variables / the local .env file
+# (see .env.example). No credentials are stored in this file.
+#
+#   docker compose up -d --build
+#   docker compose run --rm app alembic upgrade head   # explicit, never automatic
+#
+# Never use `docker compose down -v`: it deletes the database volume.
+
+# Pinned so the existing volume (music-metadata-intelligence_postgres_data)
+# is reused regardless of the directory name.
+name: music-metadata-intelligence
+
 services:
   postgres:
     image: postgres:16
     container_name: music_metadata_postgres
     environment:
-      POSTGRES_DB: music_metadata
-      POSTGRES_USER: music_user
-      POSTGRES_PASSWORD: music_password
+      POSTGRES_DB: ${POSTGRES_DB:-music_metadata}
+      POSTGRES_USER: ${POSTGRES_USER:-music_user}
+      # Only used when the volume is first initialized; changing it later does
+      # not change the password of an existing database.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+      - "[::1]:${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  app:
+    build: .
+    container_name: music_metadata_app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      # Password must be URL-safe (or URL-encoded) inside this URL.
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-music_user}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@postgres:5432/${APP_DATABASE_NAME:-music_metadata}
+    ports:
+      - "127.0.0.1:${APP_PORT:-8000}:8000"
+      - "[::1]:${APP_PORT:-8000}:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/database', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
 
 volumes:
   postgres_data:

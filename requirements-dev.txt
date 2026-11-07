@@ -1,0 +1,5 @@
+# Test dependencies. Install with: pip install -r requirements-dev.txt
+-r requirements.txt
+pytest==9.1.1
+# HTTP client used by starlette.testclient (Starlette 1.x prefers httpx2).
+httpx2==2.12.0

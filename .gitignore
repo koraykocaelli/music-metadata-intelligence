@@ -29,3 +29,11 @@ htmlcov/
 # OS
 .DS_Store
 Thumbs.db
+# Database dumps, backups and keys
+*.dump
+*.sql
+*.sqlite
+*.db
+backups/
+*.pem
+*.key
